@@ -32,7 +32,7 @@ class PostApi(ApiAuthMixin, APIView):
             fields= ['url', 'title', 'author']
 
         def get_author(self, post):
-            return post.author.email
+            return post.author.username
         
         def get_url(self, post):
             request = self.context.get("request")
@@ -88,7 +88,7 @@ class PostDetailApi(ApiAuthMixin, APIView):
             fields= ['slug', 'title', 'author', 'content', 'created_at', 'updated_at']
 
         def get_author(self, post):
-            return post.author.email
+            return post.author.username
         
     @extend_schema(responses=OutputDetailSerializer)
     def get(self, request, slug):

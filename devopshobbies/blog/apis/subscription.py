@@ -11,9 +11,9 @@ from drf_spectacular.utils import extend_schema
 
 
 class SubscribeDetailApi(ApiAuthMixin, APIView):
-    def delete(self, request, email):
+    def delete(self, request, username):
         try:
-            unsubscribe(user=request.user, email=email)
+            unsubscribe(user=request.user, username=username)
         except Exception as e:
             return Response(
                 {"detail": "Database Error - " + str(e)},
@@ -27,17 +27,17 @@ class SubscribeApi(ApiAuthMixin, APIView):
         default_limit=10
 
     class InputSubSerializer(serializers.Serializer):
-        email = serializers.CharField(max_length=100)
+        username = serializers.CharField(max_length=150)
 
     class OutputSubSerializer(serializers.ModelSerializer):
-        email = serializers.SerializerMethodField("get_email")
+        username = serializers.SerializerMethodField("get_username")
 
         class Meta:
             model = Subscription
-            fields = ['email']
+            fields = ['username']
 
-        def get_email(self, subscription):
-            return subscription.target.email
+        def get_username(self, subscription):
+            return subscription.target.username
         
     @extend_schema(responses=OutputSubSerializer)
     def get(self, request):
