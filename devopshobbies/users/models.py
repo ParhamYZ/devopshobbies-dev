@@ -51,6 +51,7 @@ class BaseUser(BaseModel, AbstractBaseUser, PermissionsMixin):
             "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
         ),
         validators=[username_validator],
+        unique=True,
     )
 
     email = models.EmailField(verbose_name = "email address",
