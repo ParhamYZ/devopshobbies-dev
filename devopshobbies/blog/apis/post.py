@@ -1,6 +1,7 @@
 from rest_framework import status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema
 
 from devopshobbies.api.pagination import LimitOffsetPagination
 from devopshobbies.blog.models import Post, Subscription 
@@ -38,10 +39,64 @@ class PostApi(ApiAuthMixin, APIView):
             path = reverse("api:blog:post_detail", args=(post.slug))
             return request.build_absolute_uri(path)
         
+    @extend_schema(responses=OutputSerializer, request=InputSerializer)
     def post(self, request):
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try: 
-            query = create_post(user=request.user, content=serializer.validated_data.get("content"), title=serializer.validated_data.get("title"))
+            query = create_post(
+                user=request.user, 
+                content=serializer.validated_data.get("content"), 
+                title=serializer.validated_data.get("title"),
+            )
         except Exception as e:
-            
+            return Response(
+                {"detail": "Database Error - " + str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(self.OutputSerializer(query, context={"request": request}).data)
+    
+    @extend_schema(parameters=[FilterSerializer], responses=OutputSerializer)
+    def get(self, request):
+        filters_serializer = self.FilterSerializer(data=request.query_params)
+        filters_serializer.is_valid(raise_exception=True)
+
+        try: 
+            query = post_list(
+                user=request.user, 
+                filters=filters_serializer.validated_data
+            )
+        except Exception as e:
+            return Response(
+                {"detail": "Filter Error - " + str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=self.OutputSerializer,
+            queryset=query,
+            request=request,
+            view=self,
+        )
+    
+
+class PostDetailApi(ApiAuthMixin, APIView):
+    class OutputDetailSerializer(serializers.ModelSerializer):
+        author = serializers.SerializerMethodField("get_author")
+        class Meta:
+            model=Post
+            fields= ['slug', 'title', 'author', 'content', 'created_at', 'updated_at']
+
+        def get_author(self, post):
+            return post.author.email
+        
+    @extend_schema(responses=OutputDetailSerializer)
+    def get(self, request, slug):
+        try: 
+            query = post_detail(slug=slug, user=request.user)
+        except Exception as e:
+            return Response(
+                {"detail": "Database Error - " + str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(self.OutputDetailSerializer(query).data)
