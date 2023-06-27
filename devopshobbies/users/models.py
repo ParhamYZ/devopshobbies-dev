@@ -4,15 +4,17 @@ from devopshobbies.common.models import BaseModel
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager as BUM
 from django.contrib.auth.models import PermissionsMixin
+from django.utils.translation import gettext_lazy as _
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
 class BaseUserManager(BUM):
-    def create_user(self, email, is_active=True, is_admin=False, password=None):
+    def create_user(self, email, username, is_active=True, is_admin=False, password=None):
         if not email:
             raise ValueError("Users must have an email address")
 
-        user = self.model(email=self.normalize_email(email.lower()), is_active=is_active, is_admin=is_admin)
+        user = self.model(email=self.normalize_email(email.lower()), username=username, is_active=is_active, is_admin=is_admin)
 
         if password is not None:
             user.set_password(password)
@@ -24,9 +26,10 @@ class BaseUserManager(BUM):
 
         return user
 
-    def create_superuser(self, email, password=None):
+    def create_superuser(self, email, username, password=None):
         user = self.create_user(
             email=email,
+            username=username,
             is_active=True,
             is_admin=True,
             password=password,
@@ -39,6 +42,16 @@ class BaseUserManager(BUM):
 
 
 class BaseUser(BaseModel, AbstractBaseUser, PermissionsMixin):
+    username_validator = UnicodeUsernameValidator()
+
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+        validators=[username_validator],
+    )
 
     email = models.EmailField(verbose_name = "email address",
                               unique=True)
@@ -48,7 +61,9 @@ class BaseUser(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     objects = BaseUserManager()
 
-    USERNAME_FIELD = "email"
+    EMAIL_FIELD = "email"
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email"]
 
     def __str__(self):
         return self.email
