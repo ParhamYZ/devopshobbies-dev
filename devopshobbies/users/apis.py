@@ -31,6 +31,7 @@ class RegisterApi(APIView):
 
 
     class InputRegisterSerializer(serializers.Serializer):
+        username = serializers.CharField(max_length=150)
         email = serializers.EmailField(max_length=255)
         bio = serializers.CharField(max_length=1000, required=False)
         password = serializers.CharField(
@@ -63,7 +64,7 @@ class RegisterApi(APIView):
 
         class Meta:
             model = BaseUser 
-            fields = ("email", "token", "created_at", "updated_at")
+            fields = ("username", "email", "token", "created_at", "updated_at")
 
         def get_token(self, user):
             data = dict()
@@ -83,6 +84,7 @@ class RegisterApi(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             user = register(
+                    username=serializer.validated_data.get("username"),
                     email=serializer.validated_data.get("email"),
                     password=serializer.validated_data.get("password"),
                     bio=serializer.validated_data.get("bio"),
