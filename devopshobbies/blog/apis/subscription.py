@@ -2,9 +2,10 @@ from rest_framework import status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from devopshobbies.api.pagination import LimitOffsetPagination
-from devopshobbies.blog.models import Post, Subscription 
-# from devopshobbies.blog.services import un
+from devopshobbies.api.pagination import LimitOffsetPagination, get_paginated_response
+from devopshobbies.blog.models import Subscription 
+from devopshobbies.blog.selectors.post import get_subscribings
+from devopshobbies.blog.services.post import subscribe, unsubscribe
 from devopshobbies.api.mixins import ApiAuthMixin
 
 from drf_spectacular.utils import extend_schema
@@ -42,7 +43,7 @@ class SubscribeApi(ApiAuthMixin, APIView):
     @extend_schema(responses=OutputSubSerializer)
     def get(self, request):
         user=request.user
-        query=get_subscribers(user=user)
+        query=get_subscribings(user=user)
         return get_paginated_response(
             request=request,
             pagination_class=self.Pagination,
@@ -57,10 +58,10 @@ class SubscribeApi(ApiAuthMixin, APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            query = subscribe()
+            query = subscribe(user=request.user, username=serializer.validated_data.get("username"))
         except Exception as e:
             return Response(
                     f"Database Error {e}",
-                    status=status.HTTP_400_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST
                     )
         return Response(self.OutputSubSerializer(query).data)

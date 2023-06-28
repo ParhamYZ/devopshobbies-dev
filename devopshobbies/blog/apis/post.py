@@ -1,11 +1,13 @@
 from rest_framework import status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.reverse import reverse
 from drf_spectacular.utils import extend_schema
 
-from devopshobbies.api.pagination import LimitOffsetPagination
-from devopshobbies.blog.models import Post, Subscription 
-# from devopshobbies.blog.services import un
+from devopshobbies.api.pagination import LimitOffsetPagination, get_paginated_response_context
+from devopshobbies.blog.models import Post
+from devopshobbies.blog.services.post import create_post
+from devopshobbies.blog.selectors.post import post_list, post_detail
 from devopshobbies.api.mixins import ApiAuthMixin
 
 class PostApi(ApiAuthMixin, APIView):
@@ -36,7 +38,7 @@ class PostApi(ApiAuthMixin, APIView):
         
         def get_url(self, post):
             request = self.context.get("request")
-            path = reverse("api:blog:post_detail", args=(post.slug))
+            path = reverse("api:blog:post_detail", args=[post.slug])
             return request.build_absolute_uri(path)
         
     @extend_schema(responses=OutputSerializer, request=InputSerializer)

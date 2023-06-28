@@ -7,7 +7,7 @@ class Post(BaseModel):
     slug = models.SlugField(primary_key=True, max_length=100)
     title = models.CharField(max_length=100, unique=True)
     content = models.CharField(max_length=1000)
-    auhor = models.ForeignKey(BaseUser, on_delete=models.SET_NULL, null=True)
+    author = models.ForeignKey(BaseUser, on_delete=models.SET_NULL, null=True)
 
     def __str__(self) -> str:
         return self.slug
