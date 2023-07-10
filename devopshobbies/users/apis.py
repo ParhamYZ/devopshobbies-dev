@@ -1,15 +1,17 @@
+from typing import Any
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import serializers
 
 from django.core.validators import MinLengthValidator
+from django.core.cache import cache
 from .validators import number_validator, special_char_validator, letter_validator
 from devopshobbies.users.models import BaseUser , Profile
 from devopshobbies.api.mixins import ApiAuthMixin
 from devopshobbies.users.selectors import get_profile
 from devopshobbies.users.services import register 
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from drf_spectacular.utils import extend_schema
 
@@ -20,6 +22,15 @@ class ProfileApi(ApiAuthMixin, APIView):
         class Meta:
             model = Profile 
             fields = ("bio", "posts_count", "subscribers_count", "subscribings_count")
+        
+        def to_representation(self, instance):
+            rep = super().to_representation(instance)
+            cache_profile = cache.get(f"profile_{instance.user.username}", {})
+            if cache_profile:
+                rep["posts_count"] = cache_profile.get("posts_count")
+                rep["subscribers_count"] = cache_profile.get("subscribers_count")
+                rep["subscribings_count"] = cache_profile.get("subscribings_count")
+            return rep
 
     @extend_schema(responses=OutPutSerializer)
     def get(self, request):
