@@ -18,7 +18,10 @@ EXPOSE 8000
 
 
 # Install pip requirements
-COPY requirements.txt .
+COPY requirements.txt ${APP_HOME}
+RUN python -m pip install -r requirements.txt
+
+# Copy all files
 COPY . ${APP_HOME}
 
-RUN python -m pip install -r requirements.txt && pip install ipython==8.2.0 && pip install gunicorn==20.1.0
+RUN pip install ipython==8.2.0 && pip install gunicorn==20.1.0
