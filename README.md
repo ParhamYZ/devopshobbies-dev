@@ -1,6 +1,7 @@
 # DevOpsHobbies
 ## Project Description
 This is a practical project to learn how to build a django project and deploy it in the production environment. A full description of this assignment is provided in 'python-assignment.md' file. Dear Amirbahador has explained this project step by step in Persian and you can see his videos in the link below:
+
 https://www.youtube.com/playlist?list=PLYrn63eEqAzY5uG5ks_OquWcojzHvhp9Z
 
 
