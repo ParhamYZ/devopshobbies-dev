@@ -15,8 +15,7 @@ source venv/bin/activate
 
 3- install Dependencies
 ```
-pip install -r requirements_dev.txt
-pip install -r requirements.txt
+pip install -r requirements/local.txt
 ```
 
 4- create your env
