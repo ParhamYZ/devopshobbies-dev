@@ -19,7 +19,7 @@ build-docker-image:
     - "docker login --username $HUB_USER --password $HUB_PASSWORD https://$HUB_URL"
   script:
     - "echo docker build backend image"
-    - "docker build -t $HUB_URL/backend/backend:latest ./docker/production.Dockerfile"
+    - "docker build -t $HUB_URL/backend/backend:latest -f ./docker/production.Dockerfile"
 
     - "echo docker push backend image"
     - "docker push $HUB_URL/backend/backend:latest"
